@@ -8,19 +8,28 @@ router.get('/getGoals', function(req, res, next) {
   res.json(goals);
 });
 
-module.exports = router;
+router.delete('/removeGoals/:id', function(req,res,next) {
+  if(req.params && req.params.id){
+    let id = req.params.id;
+    tasks = tasks.filter(tasks => tasks.id !== id);
+    res.json(goals);
+  }else{
+      res.status(400).json({});
+  }
+ 
+});
+
 
 router.post('/addGoals', function(req, res, next){
     let timestamp = Date.now()+Math.random();
-    req.body.id = timestamp.toString();
-    goals.push(req.body);
-    res.json(goals)
+    if(req.body && req.body && req.body.name && req.body.description && req.body.dueDate){
+      req.body.id = timestamp;
+      tasks.push(req.body);
+      res.json(tasks)
+    }else{
+      res.status(400).json({})
+    }
 });
 
-router.delete('/removeGoals/:id', function(req,res,next) {
-    let id = req.params.id;
-    goals = goals.filter(goal => goal.id !== id);
-    res.json(goals);
-})
 
 module.exports = router;
