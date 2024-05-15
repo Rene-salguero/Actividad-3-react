@@ -1,35 +1,45 @@
 var express = require('express');
 var router = express.Router();
+const mongoose = require('mongoose');
+const { response } = require('../app');
+
+const goalInit = mongoose.model('goals', {
+  name: String,
+  description: String,
+  dueDate: String
+}, 'goals');
 
 let goals = [];
 
-/* GET home page. */
+/* GET goals. */
 router.get('/getGoals', function(req, res, next) {
-  res.json(goals);
+  goalInit.find({}).then((response) =>
+    res.status(200).json(response)
+  ).catch((err) => res.status(500).json(err));
 });
 
-router.delete('/removeGoals/:id', function(req,res,next) {
-  if(req.params && req.params.id){
+/* DELETE goal. */
+router.delete('/removeGoals/:id', function(req, res, next) {
+  if (req.params && req.params.id) {
     let id = req.params.id;
-    tasks = tasks.filter(tasks => tasks.id !== id);
-    res.json(goals);
-  }else{
-      res.status(400).json({});
+    goalInit.deleteOne({ _id: new mongoose.Types.ObjectId(id) }).then((response) => {
+      res.status(200).json(response);
+    }).catch(err => res.status(500).json(err));
+  } else {
+    res.status(400).json({ error: "ID no está siendo enviada" });
   }
- 
 });
 
-
-router.post('/addGoals', function(req, res, next){
-    let timestamp = Date.now()+Math.random();
-    if(req.body && req.body && req.body.name && req.body.description && req.body.dueDate){
-      req.body.id = timestamp;
-      tasks.push(req.body);
-      res.json(tasks)
-    }else{
-      res.status(400).json({})
-    }
+/* POST add goal. */
+router.post('/addGoals', function(req, res, next) {
+  if (req.body && req.body.name && req.body.description && req.body.dueDate) {
+    const goal = new goalInit(req.body);
+    goal.save().then(() =>
+      res.status(200).json({})
+    ).catch((err) => res.status(500).json(err));
+  } else {
+    res.status(400).json({ error: "Faltan parámetros" });
+  }
 });
-
 
 module.exports = router;
